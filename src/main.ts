@@ -10,17 +10,17 @@ const run = async (): Promise<void> => {
 
   const downtimes = core.getInput(days[currentDate.getUTCDay()]) || ''
   core.debug(`Downtimes: ${downtimes}`)
-  try {
-    for (const downtime of downtimes.split(',')) {
-      if (isInDowntime(currentDate, tz, downtime)) {
-        core.setFailed(
-          `The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`
-        )
-      }
+  // try {
+  for (const downtime of downtimes.split(',')) {
+    if (isInDowntime(currentDate, tz, downtime)) {
+      core.setFailed(
+        `The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`
+      )
     }
-  } catch (error) {
-    core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
   }
+  // } catch (error) {
+  //   core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
+  // }
 }
 
 run()
