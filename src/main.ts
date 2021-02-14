@@ -17,7 +17,7 @@ const run = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
+    core.setFailed(`Error: ${error}. Run date: ${currentDate}.`)
   }
 }
 
