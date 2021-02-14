@@ -36,6 +36,7 @@ You can use this action by adding the following step to your workflow:
 ```
 name: Check merge
 on:
+  pull_request:
   push:
     branches:
       - main
