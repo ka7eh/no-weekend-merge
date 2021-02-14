@@ -1,6 +1,9 @@
 name: 'No Weekend Merge'
 description: 'An action to prevent merges on weekends, or whenever that a merge should not happend'
 author: 'ka7eh'
+branding:
+  icon: git-merge
+  color: green
 inputs:
   tz:
     required: true
