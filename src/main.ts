@@ -3,7 +3,7 @@ import {isInDowntime} from './check'
 
 const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
-const run = async (): Promise<void> => {
+async function run(): Promise<void> {
   const currentDate = new Date()
   const tz = parseFloat(core.getInput('tz'))
   core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`)
