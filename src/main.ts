@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {isInDowntime} from './check'
 
-const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 async function run(): Promise<void> {
   const currentDate = new Date()
