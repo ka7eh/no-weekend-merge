@@ -28,5 +28,5 @@ inputs:
     required: false
     description: 'When to block on Sunday'
 runs:
-  using: 'node14'
+  using: 'node12'
   main: 'dist/index.js'
