@@ -90,19 +90,20 @@ const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const currentDate = new Date();
-        const tz = parseFloat(core.getInput('tz'));
-        core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`);
-        const downtimes = core.getInput(days[currentDate.getUTCDay()]) || '';
-        core.debug(`Downtimes: ${downtimes}`);
-        // try {
-        for (const downtime of downtimes.split(',')) {
-            if (check_1.isInDowntime(currentDate, tz, downtime)) {
-                core.setFailed(`The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`);
+        try {
+            const tz = parseFloat(core.getInput('tz'));
+            core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`);
+            const downtimes = core.getInput(days[currentDate.getUTCDay()]) || '';
+            core.debug(`Downtimes: ${downtimes}`);
+            for (const downtime of downtimes.split(',')) {
+                if (check_1.isInDowntime(currentDate, tz, downtime)) {
+                    core.setFailed(`The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`);
+                }
             }
         }
-        // } catch (error) {
-        //   core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
-        // }
+        catch (error) {
+            core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`);
+        }
     });
 }
 run();
