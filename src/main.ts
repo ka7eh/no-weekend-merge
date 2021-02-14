@@ -5,13 +5,12 @@ const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 const run = async (): Promise<void> => {
   const currentDate = new Date()
+  const tz = parseFloat(core.getInput('tz'))
+  core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`)
+
+  const downtimes = core.getInput(days[currentDate.getUTCDay()]) || ''
+  core.debug(`Downtimes: ${downtimes}`)
   try {
-    const tz = parseFloat(core.getInput('tz'))
-    core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`)
-
-    const downtimes = core.getInput(days[currentDate.getUTCDay()]) || ''
-    core.debug(`Downtimes: ${downtimes}`)
-
     for (const downtime of downtimes.split(',')) {
       if (isInDowntime(currentDate, tz, downtime)) {
         core.setFailed(
