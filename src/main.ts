@@ -9,6 +9,8 @@ const run = async (): Promise<void> => {
     const tz = parseFloat(core.getInput('tz'))
     const downtimes = core.getInput(days[currentDate.getUTCDate()]) || ''
 
+    core.debug(`TZ: ${tz} - Downtimes: ${downtimes}`)
+
     for (const downtime of downtimes.split(',')) {
       if (isInDowntime(currentDate, tz, downtime)) {
         core.setFailed(
@@ -17,7 +19,7 @@ const run = async (): Promise<void> => {
       }
     }
   } catch (error) {
-    core.setFailed(`Error: ${error}. Run date: ${currentDate}.`)
+    core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
   }
 }
 
