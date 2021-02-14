@@ -34,16 +34,24 @@ sun: '00:00-23:59'
 You can use this action by adding the following step to your workflow:
 
 ```
-steps:
-- name: Check for downtimes
-  uses: ka7eh/no-weekend-merge@releases/v0.1
-  with:
-    tz: '-5'
-    mon: '00:00-07:00,16:30-23:59'
-    tue: '00:00-07:00,16:30-23:59'
-    wed: '00:00-07:00,16:30-23:59'
-    thu: '00:00-07:00,16:30-23:59'
-    fri: '00:00-07:00,16:30-23:59'
-    sat: '00:00-23:59'
-    sun: '00:00-23:59'
+name: Check merge
+on:
+  push:
+    branches:
+      - main
+jobs:
+  no-weekend-merge:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check for downtimes
+      uses: ka7eh/no-weekend-merge@releases/v0.1
+      with:
+        tz: '-5'
+        mon: '00:00-07:00,16:30-23:59'
+        tue: '00:00-07:00,16:30-23:59'
+        wed: '00:00-07:00,16:30-23:59'
+        thu: '00:00-07:00,16:30-23:59'
+        fri: '00:00-07:00,16:30-23:59'
+        sat: '00:00-23:59'
+        sun: '00:00-23:59'
 ```
