@@ -7,9 +7,10 @@ const run = async (): Promise<void> => {
   const currentDate = new Date()
   try {
     const tz = parseFloat(core.getInput('tz'))
-    const downtimes = core.getInput(days[currentDate.getUTCDate()]) || ''
+    core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`)
 
-    core.debug(`TZ: ${tz} - Downtimes: ${downtimes}`)
+    const downtimes = core.getInput(days[currentDate.getUTCDay()]) || ''
+    core.debug(`Downtimes: ${downtimes}`)
 
     for (const downtime of downtimes.split(',')) {
       if (isInDowntime(currentDate, tz, downtime)) {
