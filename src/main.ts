@@ -1,18 +1,23 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {isInDowntime} from './check'
 
-async function run(): Promise<void> {
+const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
+const run = async (): Promise<void> => {
+  const currentDate = new Date()
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const tz = parseFloat(core.getInput('tz'))
+    const downtimes = core.getInput(days[currentDate.getUTCDate()]) || ''
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    for (const downtime of downtimes.split(',')) {
+      if (isInDowntime(currentDate, tz, downtime)) {
+        core.setFailed(
+          `The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`
+        )
+      }
+    }
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`)
   }
 }
 

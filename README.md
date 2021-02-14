@@ -1,105 +1,49 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+# No Weekend Merge
 
-# Create a JavaScript Action using TypeScript
+Merging PRs that trigger some workflows on weekends or after work hours might break something without anyone being around to fix the issue.
+You can prevent merges during these time using this action.
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+## Inputs
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+### Time zone (required):
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+Input name: **tz**
 
-## Create an action from this template
+The time zone that the downtimes are specified in, e.g. -5 for Chicago and 3.5 for Tehran. The default value is 0.
 
-Click the `Use this Template` and provide the new repo details for your action
+### Days (optional):
 
-## Code in Main
+There are seven inputs for the days of the week. Each day accepts a comma-separated list of downtime durations. Each downtime duration must match the following regex pattern: `/(?<fromHour>\d{2}):(?<fromMinute>\d{2})-(?<toHour>\d{2}):(?<toMinute>\d{2})/`
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+Input names: **mon**, **tue**, **wed**, **thu**, **fri**, **sat**, **sun**
 
-Install the dependencies  
-```bash
-$ npm install
+For example, the following inputs prevent merges in the given time zone on all hours on weekends, and 00:00 to 07:00 and 16:30 to 23:59 on weekdays.
+
+```
+mon: '00:00-07:00,16:30-23:59'
+tue: '00:00-07:00,16:30-23:59'
+wed: '00:00-07:00,16:30-23:59'
+thu: '00:00-07:00,16:30-23:59'
+fri: '00:00-07:00,16:30-23:59'
+sat: '00:00-23:59'
+sun: '00:00-23:59'
 ```
 
-Build the typescript and package it for distribution
-```bash
-$ npm run build && npm run package
+## Usage
+
+You can use this action by adding the following step to your workflow:
+
 ```
-
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
-
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
+steps:
+- name: Check for downtimes
+  uses: ka7eh/no-weekend-merge@releases/v0.1
+  with:
+    tz: '-5'
+    mon: '00:00-07:00,16:30-23:59'
+    tue: '00:00-07:00,16:30-23:59'
+    wed: '00:00-07:00,16:30-23:59'
+    thu: '00:00-07:00,16:30-23:59'
+    fri: '00:00-07:00,16:30-23:59'
+    sat: '00:00-23:59'
+    sun: '00:00-23:59'
 ```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action

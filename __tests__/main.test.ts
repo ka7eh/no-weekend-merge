@@ -1,28 +1,36 @@
-import {wait} from '../src/wait'
-import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
+import {isInDowntime} from '../src/check'
 
-test('throws invalid number', async () => {
-  const input = parseInt('foo', 10)
-  await expect(wait(input)).rejects.toThrow('milliseconds not a number')
-})
+describe('isInDowntime should', () => {
+  const currentDate = new Date(Date.UTC(2021, 1, 13, 12, 53))
+  const tz = 3.5
 
-test('wait 500 ms', async () => {
-  const start = new Date()
-  await wait(500)
-  const end = new Date()
-  var delta = Math.abs(end.getTime() - start.getTime())
-  expect(delta).toBeGreaterThan(450)
-})
+  test('return false when no downtime is provided', () => {
+    expect(isInDowntime(currentDate, tz)).toBe(false)
+  })
 
-// shows how the runner will run a javascript action with env / stdout protocol
-test('test runs', () => {
-  process.env['INPUT_MILLISECONDS'] = '500'
-  const np = process.execPath
-  const ip = path.join(__dirname, '..', 'lib', 'main.js')
-  const options: cp.ExecFileSyncOptions = {
-    env: process.env
-  }
-  console.log(cp.execFileSync(np, [ip], options).toString())
+  test('throw error when downtime does not match pattern', () => {
+    expect(() => isInDowntime(currentDate, tz, '6:00-7:00')).toThrow(
+      'Invalid downtime'
+    )
+  })
+
+  test('throw error when downtime is not valid time', () => {
+    expect(() => isInDowntime(currentDate, tz, '17:00-24:00')).toThrow(
+      'Invalid downtime'
+    )
+  })
+
+  test('throw error when downtime start time is after end time', () => {
+    expect(() => isInDowntime(currentDate, tz, '16:30-07:00')).toThrow(
+      'Invalid downtime'
+    )
+  })
+
+  test('return true when in downtime', () => {
+    expect(isInDowntime(currentDate, tz, '16:00-23:59')).toBe(true)
+  })
+
+  test('return false when not in downtime', () => {
+    expect(isInDowntime(currentDate, tz, '16:30-23:59')).toBe(false)
+  })
 })

@@ -1,11 +1,32 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'No Weekend Merge'
+description: 'An action to prevent merges on weekends, or whenever that a merge should not happend'
+author: 'ka7eh'
 inputs:
-  milliseconds: # change this
+  tz:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Timezone of the downtime periods'
+    default: '0'
+  mon:
+    required: false
+    description: 'When to block on Mondays'
+  tue:
+    required: false
+    description: 'When to block on Tuesday'
+  wed:
+    required: false
+    description: 'When to block on Wednesday'
+  thu:
+    required: false
+    description: 'When to block on Thursday'
+  fri:
+    required: false
+    description: 'When to block on Friday'
+  sat:
+    required: false
+    description: 'When to block on Saturday'
+  sun:
+    required: false
+    description: 'When to block on Sunday'
 runs:
-  using: 'node12'
+  using: 'node14'
   main: 'dist/index.js'

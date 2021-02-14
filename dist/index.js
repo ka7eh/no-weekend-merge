@@ -3,8 +3,56 @@ require('./sourcemap-register.js');module.exports =
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 657:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isInDowntime = void 0;
+const isInDowntime = (date, tz, downtime) => {
+    if (!downtime) {
+        return false;
+    }
+    const result = /(?<fromHour>\d{2}):(?<fromMinute>\d{2})-(?<toHour>\d{2}):(?<toMinute>\d{2})/.exec(downtime);
+    if (!result) {
+        throw new Error('Invalid downtime');
+    }
+    const groups = result.groups;
+    const fromHour = parseInt(groups.fromHour, 10);
+    const fromMinute = parseInt(groups.fromMinute, 10);
+    const toHour = parseInt(groups.toHour, 10);
+    const toMinute = parseInt(groups.toMinute, 10);
+    for (const num of [fromHour, fromMinute, toHour, toMinute]) {
+        if (Number.isNaN(num)) {
+            throw new Error('Invalid downtime');
+        }
+    }
+    for (const hour of [fromHour, toHour]) {
+        if (hour < 0 || hour > 23) {
+            throw new Error('Invalid downtime');
+        }
+    }
+    for (const minute of [fromMinute, toMinute]) {
+        if (minute < 0 || minute > 59) {
+            throw new Error('Invalid downtime');
+        }
+    }
+    if (fromHour > toHour || (fromHour === toHour && fromMinute > toMinute)) {
+        throw new Error('Invalid downtime');
+    }
+    const hourAdjustment = parseInt(tz.toString(), 10);
+    const minuteAdjustment = (tz % hourAdjustment) * 60;
+    const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), fromHour - hourAdjustment, fromMinute - minuteAdjustment);
+    const end = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), toHour - hourAdjustment, toMinute - minuteAdjustment);
+    return date.getTime() >= start && date.getTime() <= end;
+};
+exports.isInDowntime = isInDowntime;
+
+
+/***/ }),
+
 /***/ 109:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -36,60 +84,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__webpack_require__(186));
-const wait_1 = __webpack_require__(817);
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-            core.debug(new Date().toTimeString());
-            yield wait_1.wait(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+const core = __importStar(__nccwpck_require__(186));
+const check_1 = __nccwpck_require__(657);
+const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const run = () => __awaiter(void 0, void 0, void 0, function* () {
+    const currentDate = new Date();
+    try {
+        const tz = parseFloat(core.getInput('tz'));
+        const downtimes = core.getInput(days[currentDate.getUTCDate()]) || '';
+        for (const downtime of downtimes.split(',')) {
+            if (check_1.isInDowntime(currentDate, tz, downtime)) {
+                core.setFailed(`The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`);
+            }
         }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
+    }
+    catch (error) {
+        core.setFailed(`Error: ${error.message}. Run date: ${currentDate}.`);
+    }
+});
 run();
 
 
 /***/ }),
 
-/***/ 817:
-/***/ (function(__unused_webpack_module, exports) {
-
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
-
-
-/***/ }),
-
 /***/ 351:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
 var __importStar = (this && this.__importStar) || function (mod) {
@@ -100,8 +119,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const os = __importStar(__webpack_require__(87));
-const utils_1 = __webpack_require__(278);
+const os = __importStar(__nccwpck_require__(87));
+const utils_1 = __nccwpck_require__(278);
 /**
  * Commands
  *
@@ -174,7 +193,7 @@ function escapeProperty(s) {
 /***/ }),
 
 /***/ 186:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -194,11 +213,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const command_1 = __webpack_require__(351);
-const file_command_1 = __webpack_require__(717);
-const utils_1 = __webpack_require__(278);
-const os = __importStar(__webpack_require__(87));
-const path = __importStar(__webpack_require__(622));
+const command_1 = __nccwpck_require__(351);
+const file_command_1 = __nccwpck_require__(717);
+const utils_1 = __nccwpck_require__(278);
+const os = __importStar(__nccwpck_require__(87));
+const path = __importStar(__nccwpck_require__(622));
 /**
  * The code to exit an action
  */
@@ -418,7 +437,7 @@ exports.getState = getState;
 /***/ }),
 
 /***/ 717:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 
 // For internal use, subject to change.
@@ -432,9 +451,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const fs = __importStar(__webpack_require__(747));
-const os = __importStar(__webpack_require__(87));
-const utils_1 = __webpack_require__(278);
+const fs = __importStar(__nccwpck_require__(747));
+const os = __importStar(__nccwpck_require__(87));
+const utils_1 = __nccwpck_require__(278);
 function issueCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
@@ -504,7 +523,7 @@ module.exports = require("path");;
 /******/ 	var __webpack_module_cache__ = {};
 /******/ 	
 /******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+/******/ 	function __nccwpck_require__(moduleId) {
 /******/ 		// Check if module is in cache
 /******/ 		if(__webpack_module_cache__[moduleId]) {
 /******/ 			return __webpack_module_cache__[moduleId].exports;
@@ -519,7 +538,7 @@ module.exports = require("path");;
 /******/ 		// Execute the module function
 /******/ 		var threw = true;
 /******/ 		try {
-/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
 /******/ 			if(threw) delete __webpack_module_cache__[moduleId];
@@ -532,11 +551,11 @@ module.exports = require("path");;
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__webpack_require__.ab = __dirname + "/";/************************************************************************/
+/******/ 	__nccwpck_require__.ab = __dirname + "/";/************************************************************************/
 /******/ 	// module exports must be returned from runtime so entry inlining is disabled
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(109);
+/******/ 	return __nccwpck_require__(109);
 /******/ })()
 ;
 //# sourceMappingURL=index.js.map
