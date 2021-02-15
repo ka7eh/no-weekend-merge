@@ -8,8 +8,17 @@ require('./sourcemap-register.js');module.exports =
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isInDowntime = void 0;
-const isInDowntime = (date, tz, downtime) => {
+exports.isInDowntime = exports.getUTCAdjustments = void 0;
+const getUTCAdjustments = (tz) => {
+    const hours = parseInt(tz.toString(), 10);
+    const minutes = (tz % hours) * 60;
+    return {
+        hours,
+        minutes
+    };
+};
+exports.getUTCAdjustments = getUTCAdjustments;
+const isInDowntime = (date, utcAdjustments, downtime) => {
     if (!downtime) {
         return false;
     }
@@ -40,10 +49,8 @@ const isInDowntime = (date, tz, downtime) => {
     if (fromHour > toHour || (fromHour === toHour && fromMinute > toMinute)) {
         throw new Error('Invalid downtime');
     }
-    const hourAdjustment = parseInt(tz.toString(), 10);
-    const minuteAdjustment = (tz % hourAdjustment) * 60;
-    const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), fromHour - hourAdjustment, fromMinute - minuteAdjustment);
-    const end = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), toHour - hourAdjustment, toMinute - minuteAdjustment);
+    const start = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), fromHour - utcAdjustments.hours, fromMinute - utcAdjustments.minutes);
+    const end = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), toHour - utcAdjustments.hours, toMinute - utcAdjustments.minutes);
     return date.getTime() >= start && date.getTime() <= end;
 };
 exports.isInDowntime = isInDowntime;
@@ -92,11 +99,14 @@ function run() {
         const currentDate = new Date();
         try {
             const tz = parseFloat(core.getInput('tz'));
+            const utcAdjustments = check_1.getUTCAdjustments(tz);
+            currentDate.setUTCHours(currentDate.getUTCHours() + utcAdjustments.hours);
+            currentDate.setUTCMinutes(currentDate.getUTCMinutes() + utcAdjustments.minutes);
             core.debug(`TZ: ${tz} - Day: ${currentDate.getUTCDay()}`);
             const downtimes = core.getInput(days[currentDate.getUTCDay()]) || '';
             core.debug(`Downtimes: ${downtimes}`);
             for (const downtime of downtimes.split(',')) {
-                if (check_1.isInDowntime(currentDate, tz, downtime)) {
+                if (check_1.isInDowntime(currentDate, utcAdjustments, downtime)) {
                     core.setFailed(`The PR cannot be merged at this time (${currentDate}) with the current settings (${downtime}).`);
                 }
             }

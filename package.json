@@ -1,6 +1,6 @@
 {
   "name": "no-weekend-merge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An action to prevent merges on weekends, or whenever that a merge should not happend",
   "main": "lib/main.js",
   "scripts": {

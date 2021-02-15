@@ -1,3 +1,8 @@
+interface UTCAdjustments {
+  hours: number
+  minutes: number
+}
+
 interface DowntimePattern {
   [k: string]: string
   fromHour: string
@@ -6,9 +11,18 @@ interface DowntimePattern {
   toMinute: string
 }
 
+export const getUTCAdjustments = (tz: number): UTCAdjustments => {
+  const hours = parseInt(tz.toString(), 10)
+  const minutes = (tz % hours) * 60
+  return {
+    hours,
+    minutes
+  }
+}
+
 export const isInDowntime = (
   date: Date,
-  tz: number,
+  utcAdjustments: UTCAdjustments,
   downtime?: string
 ): boolean => {
   if (!downtime) {
@@ -52,23 +66,20 @@ export const isInDowntime = (
     throw new Error('Invalid downtime')
   }
 
-  const hourAdjustment = parseInt(tz.toString(), 10)
-  const minuteAdjustment = (tz % hourAdjustment) * 60
-
   const start = Date.UTC(
     date.getUTCFullYear(),
     date.getUTCMonth(),
     date.getUTCDate(),
-    fromHour - hourAdjustment,
-    fromMinute - minuteAdjustment
+    fromHour - utcAdjustments.hours,
+    fromMinute - utcAdjustments.minutes
   )
 
   const end = Date.UTC(
     date.getUTCFullYear(),
     date.getUTCMonth(),
     date.getUTCDate(),
-    toHour - hourAdjustment,
-    toMinute - minuteAdjustment
+    toHour - utcAdjustments.hours,
+    toMinute - utcAdjustments.minutes
   )
 
   return date.getTime() >= start && date.getTime() <= end
