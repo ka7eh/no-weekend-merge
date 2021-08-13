@@ -24,7 +24,7 @@
   "author": "Kaveh Karimi (ka7eh)",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.3.0"
+    "@actions/core": "^1.4.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
